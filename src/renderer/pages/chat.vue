@@ -1,6 +1,6 @@
 <template>
   <div class="chat h-100 px-0 d-flex flex-column mx-auto">
-    <div class="px-0 flex-grow-1 d-flex flex-wrap align-items-stretch">
+    <div class="px-0 flex-grow-1 d-flex flex-wrap">
       <select
         class="form-control col-2 w-100 h-100"
         v-model="selectedChans"
@@ -10,7 +10,9 @@
         <option value="#a-channel">#a-channel</option>
         <option value="#other">#other</option>
       </select>
-      <div class="col-8 border rounded" style="overflow-y: scroll;">
+      <div
+        class="chat-display col-8 border rounded"
+      >
         <pre
           v-for="(_, i) in Array(40)"
           :key="i"
@@ -28,7 +30,7 @@
         <option value="ethan">ethan</option>
       </select>
     </div>
-    <div class="input-group px-0">
+    <div class="chat-input input-group px-0">
       <input
         class="form-control"
         type="text"
@@ -63,9 +65,15 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
+@import "@/assets/scss/bootstrap_config.scss";
+
 .chat {
-  div {
-    max-height: 80vh;
+  .chat-display {
+    overflow-y: scroll;
+    height: calc(100vh - #{$input-height});
+  }
+  .chat-input {
+    height: $input-height ;
   }
 }
 </style>
