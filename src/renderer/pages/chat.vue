@@ -1,17 +1,35 @@
 <template>
   <div class="chat h-100 px-0 d-flex flex-column mx-auto">
     <div class="chat-display px-0 flex-grow-1 d-flex flex-wrap">
-      <select
-        class="form-control col-2 w-100 h-100"
-        v-model="selectedChans"
-        multiple
-        @change="selectedUsers = []"
-      >
-        <option v-for="(_, i) in Array(10)" :key="i" :value="'#a-channel-' + i">
-          #a-channel-{{ i }}
-        </option>
-      </select>
-      <div class="col-8 border rounded">
+      <div class="channels col-3 p-0 d-flex flex-column">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">#</span>
+          </div>
+          <input
+            type="text"
+            class="form-control"
+            name="newChannel"
+            v-model="newChannel"
+          />
+          <div class="input-group-append">
+            <button class="btn btn-secondary" @click="joinEnteredChannel()">
+              +
+            </button>
+          </div>
+        </div>
+        <select
+          class="form-control w-100 flex-grow-1"
+          v-model="selectedChans"
+          multiple
+          @change="selectedUsers = []"
+        >
+          <option v-for="(chan, i) in availableChans" :key="i" :value="chan">
+            {{ chan }}
+          </option>
+        </select>
+      </div>
+      <div class="col-7 border rounded">
         <pre
           v-for="(_, i) in Array(40)"
           :key="i"
@@ -20,13 +38,13 @@
         >
       </div>
       <select
-        class="form-control col-2 w-100 h-100"
+        class="form-control col-2 w-100"
         v-model="selectedUsers"
         @change="selectedChans = []"
         multiple
       >
-        <option v-for="(_, i) in Array(100)" :key="i" :value="'user' + i">
-          user{{ i }}
+        <option v-for="(user, i) in availableUsers" :key="i" :value="user">
+          {{ user }}
         </option>
       </select>
     </div>
@@ -38,7 +56,13 @@
         placeholder="Enter your message"
       />
       <div class="input-group-append">
-        <button class="btn btn-primary" type="submit">Send</button>
+        <button
+          class="btn btn-primary"
+          type="submit"
+          :disabled="selectedChans.length === 0 && selectedUsers.length === 0"
+        >
+          Send
+        </button>
       </div>
     </div>
   </div>
@@ -56,9 +80,23 @@ export default Vue.extend({
   },
   data() {
     return {
+      newChannel: "",
       selectedChans: [],
-      selectedUsers: []
+      availableChans: ["#test"],
+      selectedUsers: [],
+      availableUsers: ["ethan", "erin"]
     };
+  },
+  methods: {
+    joinEnteredChannel() {
+      if (this.newChannel) {
+        let newChannel = "#" + this.newChannel;
+        // TODO actually join channel
+        this.availableChans.push(newChannel);
+      }
+
+      this.newChannel = "";
+    }
   },
   props: {}
 });
