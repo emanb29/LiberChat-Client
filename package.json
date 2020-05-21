@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@nuxt/typescript-build": "0.5.8",
+    "@nuxtjs/router-extras": "^1.1.0",
     "@xpda-dev/core": "^0.1.5",
     "@xpda-dev/electron-builder": "^0.2.1",
     "@xpda-dev/electron-launcher": "^0.2.1",
