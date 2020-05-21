@@ -1,48 +1,27 @@
 <template>
-  <div class="e-nuxt-container">
-    <div class="e-nuxt-content">
-      <div class="e-nuxt-logo">
-        <img style="max-width: 100%;" src="~assets/electron-nuxt.png" />
-      </div>
-      <div class="e-nuxt-system-info">
-        <system-information />
-      </div>
-    </div>
-    <div class="e-nuxt-links">
-      <div
-        class="e-nuxt-button"
-        @click="openURL('https://github.com/michalzaq12/electron-nuxt')"
-      >
-        Github
-      </div>
-      <div class="e-nuxt-button" @click="openURL('https://nuxtjs.org/guide')">
-        Nuxt.js
-      </div>
-      <div
-        class="e-nuxt-button"
-        @click="openURL('https://electronjs.org/docs')"
-      >
-        Electron.js
+  <div class="card col-12 col-sm-10 col-md-8 col-xl-6 mx-auto mt-3">
+    <div class="card-body">
+      <h5 class="card-title">Connect to server</h5>
+      <div class="card-text">
+        <form @submit.prevent class="form">
+          <div class="form-group"></div>
+          <button
+            class="btn btn-primary"
+            type="submit"
+            @click="$router.push('/chat')"
+          >
+            Join
+          </button>
+        </form>
       </div>
     </div>
   </div>
 </template>
-
-<script>
+<script lang="ts">
 import { remote } from "electron";
-import net from "net";
-import SystemInformation from "@/components/SystemInformation.vue";
-
-let sock = net.connect({
-  port: 6667,
-  host: "127.0.0.1"
-});
-console.log(sock)
-
-export default {
-  components: {
-    SystemInformation
-  },
+import Vue from "vue";
+import _ from "@nuxt/types";
+export default Vue.extend({
   data() {
     return {
       externalContent: ""
@@ -51,54 +30,12 @@ export default {
   methods: {
     openURL(url) {
       remote.remote.shell.openExternal(url);
+    },
+    openChat(server: string, nick: string, user: string, host: string, realname: string) {
+      (this as Vue).$router
     }
   }
-};
+});
 </script>
 
-<style>
-.e-nuxt-container {
-  min-height: calc(100vh - 50px);
-  background: linear-gradient(to right, #ece9e6, #ffffff);
-  font-family: Helvetica, sans-serif;
-}
-
-.e-nuxt-content {
-  display: flex;
-  justify-content: space-around;
-  padding-top: 100px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.e-nuxt-logo {
-  width: 400px;
-}
-
-.e-nuxt-system-info {
-  padding: 20px;
-  border-top: 1px solid #397c6d;
-  border-bottom: 1px solid #397c6d;
-}
-
-.e-nuxt-links {
-  padding: 100px 0;
-  display: flex;
-  justify-content: center;
-}
-
-.e-nuxt-button {
-  color: #364758;
-  padding: 5px 20px;
-  border: 1px solid #397c6d;
-  margin: 0 20px;
-  border-radius: 15px;
-  font-size: 1rem;
-}
-
-.e-nuxt-button:hover {
-  cursor: pointer;
-  color: white;
-  background-color: #397c6d;
-}
-</style>
+<style lang="scss"></style>
