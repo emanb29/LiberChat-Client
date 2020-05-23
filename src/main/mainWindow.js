@@ -25,6 +25,9 @@ winHandler.onCreated(async browserWindow => {
 
   console.log("sending data to view:", data);
   contents.send("ready", data);
+  setInterval(() => {
+    contents.send("ready", { test: "data" });
+  }, 3000);
 });
 
 export default winHandler;

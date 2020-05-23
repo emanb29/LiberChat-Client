@@ -70,6 +70,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { BvToast } from "bootstrap-vue/src/components/toast";
 import process from "process";
 import { remote, ipcRenderer } from "electron";
 export default Vue.extend({
@@ -100,9 +101,14 @@ export default Vue.extend({
     }
   },
   mounted() {
-    ipcRenderer.on("ready", (event, data) => console.log(event, data));
-  },
-  props: {}
+    ipcRenderer.on("ready", (event, data) =>
+      (this as Vue).$root.$bvToast.toast(new Date().toString(), {
+        title: "test toast",
+        toaster: "b-toaster-top-right",
+        variant: "warning",
+      })
+    );
+  }
 });
 </script>
 

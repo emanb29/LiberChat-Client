@@ -23,6 +23,7 @@
   "devDependencies": {
     "@nuxt/typescript-build": "0.5.8",
     "@nuxtjs/router-extras": "^1.1.0",
+    "@types/bootstrap": "^4.5.0",
     "@xpda-dev/core": "^0.1.5",
     "@xpda-dev/electron-builder": "^0.2.1",
     "@xpda-dev/electron-launcher": "^0.2.1",
@@ -43,6 +44,7 @@
     "webpack-node-externals": "1.7.2"
   },
   "dependencies": {
-    "bootstrap": "^4.5.0"
+    "bootstrap": "^4.5.0",
+    "bootstrap-vue": "^2.15.0"
   }
 }

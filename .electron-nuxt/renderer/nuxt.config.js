@@ -27,6 +27,7 @@ const baseConfig = {
 
 const baseExtend = (config, { isClient }) => {
   config.externals = [nodeExternals({
+    whitelist: ['vue', 'bootstrap-vue'],
     modulesFromFile: {
       include: ['dependencies']
     }
