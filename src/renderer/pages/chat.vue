@@ -71,7 +71,7 @@
 <script lang="ts">
 import Vue from "vue";
 import process from "process";
-import { remote } from "electron";
+import { remote, ipcRenderer } from "electron";
 export default Vue.extend({
   asyncData(ctx) {
     return {
@@ -84,7 +84,8 @@ export default Vue.extend({
       selectedChans: [],
       availableChans: ["#test"],
       selectedUsers: [],
-      availableUsers: ["ethan", "erin"]
+      availableUsers: ["ethan", "erin"],
+      messages: []
     };
   },
   methods: {
@@ -97,6 +98,9 @@ export default Vue.extend({
 
       this.newChannel = "";
     }
+  },
+  mounted() {
+    ipcRenderer.on("ready", (event, data) => console.log(event, data));
   },
   props: {}
 });
