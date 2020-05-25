@@ -1,5 +1,7 @@
 import path from "path";
 import BrowserWinHandler from "./BrowserWinHandler";
+import { ipcMain } from "electron";
+import IRCAgent from "./IRCAgent";
 const isDev = process.env.NODE_ENV === "development";
 
 const INDEX_PATH = path.join(__dirname, "..", "renderer", "index.html");
@@ -10,24 +12,26 @@ const winHandler = new BrowserWinHandler({
   width: 1000
 });
 
-const testPromise = new Promise(resolve => {
-  setTimeout(() => {
-    resolve({ hello: "world" });
-  }, 10000);
-});
-
 winHandler.onCreated(async browserWindow => {
   if (isDev) browserWindow.loadURL(DEV_SERVER_URL);
   else browserWindow.loadFile(INDEX_PATH);
 
   let contents = browserWindow.webContents;
-  let data = await testPromise;
+  /**
+   * @type {IRCAgent}
+   */
+  let ircAgent;
 
-  console.log("sending data to view:", data);
-  contents.send("ready", data);
-  setInterval(() => {
-    contents.send("ready", { test: "data" });
-  }, 3000);
+  ipcMain.on("irc-connect", async (event, data) => {
+    ircAgent = new IRCAgent(
+      data.server,
+      data.nick,
+      data.user,
+      data.host,
+      data.realname
+    );
+    console.log("Trying to connect... errors: ", await ircAgent.tryConnect())
+  });
 });
 
 export default winHandler;

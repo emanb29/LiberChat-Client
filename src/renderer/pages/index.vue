@@ -69,7 +69,7 @@
   </div>
 </template>
 <script lang="ts">
-import { remote } from "electron";
+import { remote, ipcMain, ipcRenderer } from "electron";
 import Vue from "vue";
 import _ from "@nuxt/types";
 export default Vue.extend({
@@ -95,16 +95,19 @@ export default Vue.extend({
       realname: string | null
     ) {
       if (server && nick && user && host && realname) {
-        (this as Vue).$router.push({
-          path: "/chat",
-          query: {
-            server,
-            nick,
-            user,
-            host,
-            realname
-          }
-        });
+        console.log("sending irc-connect message")
+        ipcRenderer.send("irc-connect", { server, nick, user, host, realname });
+
+        // (this as Vue).$router.push({
+        //   path: "/chat",
+        //   query: {
+        //     server,
+        //     nick,
+        //     user,
+        //     host,
+        //     realname
+        //   }
+        // });
       }
     }
   }
