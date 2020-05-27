@@ -30,7 +30,30 @@ winHandler.onCreated(async browserWindow => {
       data.host,
       data.realname
     );
-    console.log("Trying to connect... errors: ", await ircAgent.tryConnect());
+    ircAgent.errors.each(err => {
+      /**
+       * @type {string}
+       */
+      let errStr;
+      if (err instanceof Object) errStr = JSON.stringify(err);
+      else errStr = String(err);
+
+      // TODO send errors to renderer
+      contents.send("irc-error", errStr);
+    });
+    console.log("Trying to connect...");
+    let errors = await ircAgent.tryConnect();
+    errors.forEach(err => {
+      /**
+       * @type {string}
+       */
+      let errStr;
+      if (err instanceof Object) errStr = JSON.stringify(err);
+      else errStr = String(err);
+
+      // TODO send errors to renderer
+      contents.send("irc-error", errStr);
+    });
     // TODO pipe messages to renderer
     // ircAgent.messages.pipe()
   });

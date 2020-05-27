@@ -73,6 +73,7 @@ export default class IRCAgent {
    * @returns {Promise<string[]>} a list of errors, if any
    */
   async tryConnect() {
+    // TODO use a single error interface (the errors stream)
     let parseResult = IRCAgent.parseServer(this.server);
     if (parseResult.constructor === String) {
       // @ts-ignore string vs String
@@ -145,7 +146,9 @@ export default class IRCAgent {
           command: null,
           params: [],
           isResponse() {
-            return this.command && this.command.constructor === Number;
+            // @ts-ignore parseInt actually works on Numbers
+            if (this.command && !isNaN(parseInt(this.command))) return true;
+            else return false;
           }
         };
 
@@ -217,7 +220,6 @@ export default class IRCAgent {
           // TODO this might break on "NICK emanb29 \r\n"? (note the extra space and lack of :)
         }
 
-        console.debug(`Successfully parsed ${JSON.stringify(message)}`);
         return hl([message]);
       })
       .map(
@@ -225,7 +227,7 @@ export default class IRCAgent {
         msg => {
           // @ts-ignore the whole point of this is to cast
           const respCode = parseInt(msg.command);
-          if (respCode !== NaN) {
+          if (!isNaN(respCode)) {
             msg.command = respCode;
           }
           return msg;
@@ -234,16 +236,41 @@ export default class IRCAgent {
       .each(
         /**@type {(msg: Message) => void} */
         msg => {
-          if (this.initialized) {
-            // With the connection initialized, register callback[s] to pipe messages from the renderer process to the server
-            this.messages.write(msg);
+          // Short circuit handling
+          let normalizedCommand = msg.isResponse()
+            ? msg.command
+            : msg.command.toString().toUpperCase();
+          console.log(`Got ${normalizedCommand} message`);
+          if (normalizedCommand === "ERROR") {
+            this.errors.write(msg.params.join(","));
+          } else if (normalizedCommand === "PING") {
+            this.socket.write(`PONG :${msg.params[msg.params.length - 1]}\r\n`);
+            console.debug("Got PING, returning PONG.");
+          } else if (normalizedCommand === "QUIT") {
+            console.error("Server disconnected us!"); // TODO
           } else {
-            console.error("TODO need to actually initialize");
-            // TODO if msg is a nick reject, display an error.
-            // TODO on initial data, parse out 2 messages, queue any additional messages
-            console.log("Connection complete! Starting message queue");
-            this.messages.resume();
-            // this.messages.write(msg);
+            // Main handling
+            if (!this.initialized) {
+              if (msg.isResponse() && msg.command < 6) {
+                // we expect the response to be some kind of welcome message (100-106)
+                console.log("Connection complete! Starting message queue");
+                this.messages.write(msg); // passthru the message
+                this.messages.resume();
+                this.initialized = true;
+              } else if (msg.isResponse() && msg.command === 433) {
+                // nick taken
+                this.errors.write(
+                  "The requested nick is unavailable, please choose a new one."
+                );
+              } else {
+                this.errors.write(
+                  `An unexpected response was returned from the server: "${msg.raw}"`
+                );
+              }
+            } else {
+              // With the connection initialized, register callback[s] to pipe messages from the renderer process to the server
+              this.messages.write(msg); // passthru the message
+            }
           }
         }
       );

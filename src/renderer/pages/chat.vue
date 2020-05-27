@@ -99,15 +99,6 @@ export default Vue.extend({
 
       this.newChannel = "";
     }
-  },
-  mounted() {
-    ipcRenderer.on("ready", (event, data) =>
-      (this as Vue).$root.$bvToast.toast(new Date().toString(), {
-        title: "test toast",
-        toaster: "b-toaster-top-right",
-        variant: "warning",
-      })
-    );
   }
 });
 </script>
