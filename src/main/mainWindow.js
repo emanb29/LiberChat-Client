@@ -30,7 +30,9 @@ winHandler.onCreated(async browserWindow => {
       data.host,
       data.realname
     );
-    console.log("Trying to connect... errors: ", await ircAgent.tryConnect())
+    console.log("Trying to connect... errors: ", await ircAgent.tryConnect());
+    // TODO pipe messages to renderer
+    // ircAgent.messages.pipe()
   });
 });
 
