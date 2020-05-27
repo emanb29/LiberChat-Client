@@ -68,7 +68,7 @@ winHandler.onCreated(async browserWindow => {
     ircAgent.messages.each(msg => {
       if (msg.command === "PRIVMSG") {
         console.debug("Sending text message to renderer");
-        contents.send("irc-message", [msg.prefix, ...msg.params.slice(1)].join(" "));
+        contents.send("irc-message", [msg.prefix, ...msg.params].join(" "));
       } else if (msg.command === "JOIN") {
         //IRC-JOIN [user, channel]
         let data = [msg.prefix, msg.params[0]];

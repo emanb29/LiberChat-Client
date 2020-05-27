@@ -41,7 +41,7 @@
           >
         </div>
         <select
-          class="form-control col-2 w-100"
+          class="form-control col-2 w-100 d-none"
           v-model="selectedUsers"
           @change="selectedChans = []"
           multiple
@@ -91,9 +91,9 @@ export default Vue.extend({
     return {
       newChannel: "",
       selectedChans: [],
-      availableChans: ["#test"],
+      availableChans: [],
       selectedUsers: [],
-      availableUsers: ["ethan", "erin"],
+      availableUsers: [],
       messages: [],
       message: ""
     };
@@ -108,13 +108,11 @@ export default Vue.extend({
     }
   },
   methods: {
-    joinEnteredChannel: () => {
+    joinEnteredChannel() {
       if (this.newChannel) {
         let newChannel = "#" + this.newChannel;
-        // TODO actually join channel
-        this.availableChans.push(newChannel);
+        this.runRawCommand(`JOIN ${newChannel}`);
       }
-
       this.newChannel = "";
     },
     runRawCommand(cmd: string) {
@@ -129,12 +127,27 @@ export default Vue.extend({
         this.runRawCommand(rawCmd);
         this.addMessage(`RAW COMMAND: ${rawCmd}`);
         this.message = "";
+      } else if (this.selectedChans.length !== 0) {
+        this.selectedChans.forEach(channel => {
+          this.runRawCommand(`PRIVMSG ${channel} :${this.message}`);
+          this.addMessage(`To <${channel}>: ${this.message}`);
+        });
+        this.message = "";
+      } else if (this.selectedUsers.length !== 0) {
+        this.selectedUsers.forEach(user => {
+          this.runRawCommand(`PRIVMSG ${user} :${this.message}`);
+          this.addMessage(`To <${user}>: ${this.message}`);
+        });
+        this.message = "";
       } else {
-        console.error("can't handle that yet!");
+        console.error("Tried to send a message to no channels and no users");
       }
     },
     addMessage(msg: string) {
       this.messages.unshift(msg);
+    },
+    prefixMatchesNick(prefix: string): boolean {
+      return prefix === this.nick || prefix.startsWith(this.nick + "!");
     }
   },
   mounted() {
@@ -144,7 +157,12 @@ export default Vue.extend({
     });
     ipcRenderer.on("irc-join", (ev, [user, channel]) => {
       this.addMessage(`JOIN ALERT: ${user} joined ${channel}`);
-      this.availableUsers += [user];
+
+      if (this.prefixMatchesNick(user)) {
+        this.availableChans.push(channel);
+      } else {
+        this.availableUsers.push(user);
+      }
     });
     ipcRenderer.on("irc-leave", (ev, leaveInfo) => {
       let user = leaveInfo[0];
@@ -153,6 +171,9 @@ export default Vue.extend({
       this.addMessage(
         `LEAVE ALERT: ${user} parted ${channel} with message ${partMessage}`
       );
+      if (this.prefixMatchesNick(user)) {
+        this.availableChans = this.availableChans.filter(c => c !== channel);
+      }
     });
   }
 });
