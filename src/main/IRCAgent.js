@@ -39,6 +39,9 @@ export default class IRCAgent {
     this.initialized = false;
     // TODO initialize an incoming messages queue
   }
+  static get ERR_SERVER_DISCONNECTED() {
+    return "Server disconnected!";
+  }
 
   /**
    * @param {string} server
@@ -233,21 +236,30 @@ export default class IRCAgent {
           return msg;
         }
       )
-      .each(
-        /**@type {(msg: Message) => void} */
+      .map(
+        /**@type {(msg: Message) => Message} */
         msg => {
-          // Short circuit handling
           let normalizedCommand = msg.isResponse()
             ? msg.command
             : msg.command.toString().toUpperCase();
-          console.log(`Got ${normalizedCommand} message`);
-          if (normalizedCommand === "ERROR") {
+          msg.command = normalizedCommand;
+          return msg;
+        }
+      )
+      .each(
+        /**@type {(msg: Message) => void} */
+        msg => {
+          // Short circuit handling for "low level" messages
+          console.log(`Got ${msg.command} message`);
+          if (msg.command === "ERROR") {
             this.errors.write(msg.params.join(","));
-          } else if (normalizedCommand === "PING") {
+          } else if (msg.command === "PING") {
             this.socket.write(`PONG :${msg.params[msg.params.length - 1]}\r\n`);
             console.debug("Got PING, returning PONG.");
-          } else if (normalizedCommand === "QUIT") {
-            console.error("Server disconnected us!"); // TODO
+          } else if (msg.command === "QUIT") {
+            console.error("Server disconnected us!");
+            this.errors.write(IRCAgent.ERR_SERVER_DISCONNECTED);
+            this.initialized = false;
           } else {
             // Main handling
             if (!this.initialized) {

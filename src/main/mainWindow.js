@@ -23,6 +23,10 @@ winHandler.onCreated(async browserWindow => {
   let ircAgent;
 
   ipcMain.on("irc-connect", async (event, data) => {
+    ipcMain.removeAllListeners("irc-command-raw");
+    ipcMain.on("irc-command-raw", (ev, cmd) => {
+      ircAgent.socket.write(cmd);
+    });
     ircAgent = new IRCAgent(
       data.server,
       data.nick,
@@ -38,11 +42,18 @@ winHandler.onCreated(async browserWindow => {
       if (err instanceof Object) errStr = JSON.stringify(err);
       else errStr = String(err);
 
-      // TODO send errors to renderer
-      contents.send("irc-error", errStr);
+      if (errStr === IRCAgent.ERR_SERVER_DISCONNECTED) {
+        contents.send("go-index");
+        contents.send("irc-error", errStr);
+      } else {
+        contents.send("irc-error", errStr);
+      }
     });
     console.log("Trying to connect...");
     let errors = await ircAgent.tryConnect();
+    if (errors.length === 0) {
+      contents.send("go-chat");
+    }
     errors.forEach(err => {
       /**
        * @type {string}
@@ -51,10 +62,26 @@ winHandler.onCreated(async browserWindow => {
       if (err instanceof Object) errStr = JSON.stringify(err);
       else errStr = String(err);
 
-      // TODO send errors to renderer
       contents.send("irc-error", errStr);
     });
     // TODO pipe messages to renderer
+    ircAgent.messages.each(msg => {
+      if (msg.command === "PRIVMSG") {
+        console.debug("Sending text message to renderer");
+        contents.send("irc-message", [msg.prefix, ...msg.params.slice(1)].join(" "));
+      } else if (msg.command === "JOIN") {
+        //IRC-JOIN [user, channel]
+        let data = [msg.prefix, msg.params[0]];
+        contents.send("irc-join", data);
+      } else if (msg.command === "PART") {
+        //IRC-LEAVE [user, channel, message?]
+        let data = [msg.prefix, msg.params[0]];
+        if (msg.params.length > 1) data.push(msg.params[1]);
+        contents.send("irc-leave", data);
+      } else {
+      }
+      // TODO handle other messages
+    });
     // ircAgent.messages.pipe()
   });
 });

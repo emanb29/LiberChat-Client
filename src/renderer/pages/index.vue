@@ -95,19 +95,27 @@ export default Vue.extend({
       realname: string | null
     ) {
       if (server && nick && user && host && realname) {
-        console.log("sending irc-connect message")
-        ipcRenderer.send("irc-connect", { server, nick, user, host, realname });
-
-        // (this as Vue).$router.push({
-        //   path: "/chat",
-        //   query: {
-        //     server,
-        //     nick,
-        //     user,
-        //     host,
-        //     realname
-        //   }
-        // });
+        console.log("sending irc-connect message");
+        ipcRenderer.removeAllListeners("go-chat");
+        ipcRenderer.send("irc-connect", {
+          server,
+          nick,
+          user,
+          host,
+          realname
+        });
+        ipcRenderer.once("go-chat", (ev, data) => {
+          (this as Vue).$router.push({
+            path: "/chat",
+            query: {
+              server,
+              nick,
+              user,
+              host,
+              realname
+            }
+          });
+        });
       }
     }
   }
