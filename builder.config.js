@@ -43,9 +43,9 @@ const macOS = {
 
 module.exports = {
   asar: false,
-  productName: 'My browser',
-  appId: 'org.michalzarach.my-browser',
-  artifactName: 'my-browser-${version}.${ext}',
+  productName: 'LiberChat Client',
+  appId: 'me.ethanbell.liberchat-client',
+  artifactName: 'liberchat-client-${version}.${ext}',
   directories: {
     output: 'build'
   },

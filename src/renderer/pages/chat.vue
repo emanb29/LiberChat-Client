@@ -85,6 +85,12 @@ export default Vue.extend({
   asyncData(ctx) {
     return {
       ...ctx.query
+    } as {
+      server: string;
+      nick: string;
+      user: string;
+      host: string;
+      realname: string;
     };
   },
   data() {
@@ -99,7 +105,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    submittable() {
+    submittable(): boolean {
       return !(
         this.selectedChans.length === 0 &&
         this.selectedUsers.length === 0 &&
@@ -108,18 +114,18 @@ export default Vue.extend({
     }
   },
   methods: {
-    joinEnteredChannel() {
+    joinEnteredChannel(): void {
       if (this.newChannel) {
         let newChannel = "#" + this.newChannel;
         this.runRawCommand(`JOIN ${newChannel}`);
       }
       this.newChannel = "";
     },
-    runRawCommand(cmd: string) {
+    runRawCommand(cmd: string): void {
       if (!cmd.endsWith("\r\n")) cmd += "\r\n";
       ipcRenderer.send("irc-command-raw", cmd);
     },
-    doSend() {
+    doSend(): void {
       if (!this.submittable) return;
 
       if (this.message.startsWith("/")) {
@@ -143,14 +149,16 @@ export default Vue.extend({
         console.error("Tried to send a message to no channels and no users");
       }
     },
-    addMessage(msg: string) {
+    addMessage(msg: string): void {
+      //@ts-ignore
       this.messages.unshift(msg);
     },
     prefixMatchesNick(prefix: string): boolean {
+      //@ts-ignore
       return prefix === this.nick || prefix.startsWith(this.nick + "!");
     }
   },
-  mounted() {
+  mounted(): void {
     // TODO register event handlers
     ipcRenderer.on("irc-message", (ev, msgStr: string) => {
       this.addMessage(msgStr);
@@ -159,8 +167,10 @@ export default Vue.extend({
       this.addMessage(`JOIN ALERT: ${user} joined ${channel}`);
 
       if (this.prefixMatchesNick(user)) {
+        //@ts-ignore
         this.availableChans.push(channel);
       } else {
+        //@ts-ignore
         this.availableUsers.push(user);
       }
     });
