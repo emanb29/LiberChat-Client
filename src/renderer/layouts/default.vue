@@ -29,6 +29,13 @@ export default Vue.extend({
 });
 </script>
 <style>
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
 html,
 body {
   height: 100%;

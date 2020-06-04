@@ -190,15 +190,13 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-@import "@/assets/scss/bootstrap_config.scss";
-
 .chat {
   .chat-display > * {
     overflow-y: scroll;
-    height: calc(100vh - #{$input-height});
+    height: calc(100vh - 38px); //38px == $input-height
   }
   .chat-input {
-    height: $input-height;
+    height: 38px; //38px == $input-height
   }
 }
 </style>
