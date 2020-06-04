@@ -14,7 +14,10 @@
               v-model="newChannel"
             />
             <div class="input-group-append">
-              <button class="btn btn-secondary" @click="joinEnteredChannel()">
+              <button
+                class="btn btn-secondary"
+                @click.prevent.stop="joinEnteredChannel()"
+              >
                 +
               </button>
             </div>
@@ -106,10 +109,13 @@ export default Vue.extend({
   },
   computed: {
     submittable(): boolean {
-      return !(
-        this.selectedChans.length === 0 &&
-        this.selectedUsers.length === 0 &&
-        !this.message.startsWith("/")
+      return (
+        this.message.length !== 0 &&
+        !(
+          this.selectedChans.length === 0 &&
+          this.selectedUsers.length === 0 &&
+          !this.message.startsWith("/")
+        )
       );
     }
   },

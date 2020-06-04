@@ -70,7 +70,7 @@ winHandler.onCreated(async browserWindow => {
       if (msg.command === "PRIVMSG") {
         console.debug("Sending text message to renderer");
         let messageDisp = `<${msg.params[0]}> ${msg.prefix}: ${msg.params[1]}`;
-        contents.send(messageDisp);
+        contents.send("irc-message", messageDisp);
       } else if (msg.command === "JOIN") {
         //IRC-JOIN [user, channel]
         let data = [msg.prefix, msg.params[0]];
@@ -83,8 +83,14 @@ winHandler.onCreated(async browserWindow => {
       } else if (msg.command === 322) {
         // LIST entry
         console.debug("Received LIST entry", msg);
-        let chanInfo = `LIST Channel: ${msg.params[0]} | Users: ${msg.params[1]} | Topic: ${msg.params[2]}`;
+        let chanInfo = `LIST Channel: ${msg.params[0]}\t| Users: ${msg.params[1]}\t| Topic: ${msg.params[2]}`;
         contents.send("irc-message", chanInfo);
+      } else if (msg.command === 353) {
+        console.debug("Received NAMES entry", msg);
+        let namesInfo = `LIST Channel: ${
+          msg.params[1]
+        }\t| Users: ${msg.params[2].split(" ").join(", ")}`;
+        contents.send("irc-message", namesInfo);
       } else if (msg.isResponse() && msg.command >= 400) {
         let errStr = [msg.command, ...msg.params].join(" ");
         contents.send("irc-error", errStr);
