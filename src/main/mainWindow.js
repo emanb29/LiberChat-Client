@@ -8,8 +8,9 @@ const INDEX_PATH = path.join(__dirname, "..", "renderer", "index.html");
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL; // eslint-disable-line prefer-destructuring
 
 const winHandler = new BrowserWinHandler({
-  height: 600,
-  width: 1000
+  height: 800,
+  width: 1200,
+  autoHideMenuBar: true
 });
 
 winHandler.onCreated(async browserWindow => {
@@ -68,7 +69,8 @@ winHandler.onCreated(async browserWindow => {
     ircAgent.messages.each(msg => {
       if (msg.command === "PRIVMSG") {
         console.debug("Sending text message to renderer");
-        contents.send("irc-message", [msg.prefix, ...msg.params].join(" "));
+        let messageDisp = `<${msg.params[0]}> ${msg.prefix}: ${msg.params[1]}`;
+        contents.send(messageDisp);
       } else if (msg.command === "JOIN") {
         //IRC-JOIN [user, channel]
         let data = [msg.prefix, msg.params[0]];
@@ -78,7 +80,14 @@ winHandler.onCreated(async browserWindow => {
         let data = [msg.prefix, msg.params[0]];
         if (msg.params.length > 1) data.push(msg.params[1]);
         contents.send("irc-leave", data);
-      } else {
+      } else if (msg.command === 322) {
+        // LIST entry
+        console.debug("Received LIST entry", msg);
+        let chanInfo = `LIST Channel: ${msg.params[0]} | Users: ${msg.params[1]} | Topic: ${msg.params[2]}`;
+        contents.send("irc-message", chanInfo);
+      } else if (msg.isResponse() && msg.command >= 400) {
+        let errStr = [msg.command, ...msg.params].join(" ");
+        contents.send("irc-error", errStr);
       }
       // TODO handle other messages
     });

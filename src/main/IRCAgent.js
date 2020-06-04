@@ -6,7 +6,7 @@ import * as hl from "highland";
  * @type {{
       raw: string,
       prefix: string | null,
-      command: string | number,
+      command: string | number | null,
       params: string[],
       isResponse: () => boolean
     }}
@@ -122,6 +122,9 @@ export default class IRCAgent {
     let cachedToCRLF = "";
     // With the connection initialized, pipe parsed messages directly into the queue and allow the queue to start messaging the renderer process
     datastream
+      .stopOnError(err => {
+        this.errors.write(IRCAgent.ERR_SERVER_DISCONNECTED);
+      })
       .flatMap(buff => {
         // Chunk to CRLF-ended strings
         cachedToCRLF += buff.toString("UTF-8");
@@ -286,7 +289,6 @@ export default class IRCAgent {
           }
         }
       );
-
     return []; // no errors
   }
 }
